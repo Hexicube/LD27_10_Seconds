@@ -4,7 +4,7 @@ import org.tilegames.hexicube.ludumdare27.Game;
 
 public abstract class Enemy extends Entity
 {
-	protected double x, y;
+	protected double x, y, prevX, prevY;
 	protected boolean alive;
 	
 	@Override

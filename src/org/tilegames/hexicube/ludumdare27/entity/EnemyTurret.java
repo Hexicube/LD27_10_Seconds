@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class EnemyTurret extends Enemy
 {
-	private static final Texture tex = Game.loadImage("enemysling");
+	private static final Texture tex = Game.loadImage("enemysnipe");
 	
 	private int timer, spawnTimer;
 	
@@ -16,7 +16,7 @@ public class EnemyTurret extends Enemy
 		this.x = x;
 		this.y = y;
 		alive = true;
-		timer = Game.rand.nextInt(41);
+		timer = Game.rand.nextInt(76);
 		spawnTimer = 50;
 	}
 	
@@ -51,8 +51,8 @@ public class EnemyTurret extends Enemy
 		timer--;
 		if(timer <= 0)
 		{
-			timer = 50+Game.rand.nextInt(26);
-			Game.bullets.add(new Bullet(x, y, 3+Game.rand.nextInt(3), Math.atan2(Game.player.getY()-y, Game.player.getX()-x), false, Game.rand.nextInt(10)<3));
+			timer = 75+Game.rand.nextInt(26);
+			Game.bullets.add(new Bullet(x, y, 3+Game.rand.nextDouble()*3, Math.atan2(Game.player.getY()-y, Game.player.getX()-x), false, Game.rand.nextInt(10)<3));
 		}
 		Game.checkCollision(this, Game.player);
 		timer--;
@@ -63,8 +63,9 @@ public class EnemyTurret extends Enemy
 		return alive;
 	}
 	@Override
-	public void render(SpriteBatch batch)
+	public void render(SpriteBatch batch, boolean trail)
 	{
+		if(trail) return;
 		if(spawnTimer > 0) batch.setColor(0, 1, 1, 1);
 		else batch.setColor(1, 1, 1, 1);
 		batch.draw(tex, (float)x-8, (float)y-8);

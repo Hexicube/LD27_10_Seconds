@@ -8,6 +8,7 @@ import org.tilegames.hexicube.ludumdare27.entity.*;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
@@ -32,6 +33,9 @@ public class Game implements ApplicationListener
 	
 	public static Texture solidwhite;
 	
+	private static boolean tracer, tracerKeyPress, spawnKeyPress, lastRender;
+	private static int spawnMode;
+	
 	@Override
 	public void create()
 	{
@@ -46,11 +50,14 @@ public class Game implements ApplicationListener
 		bullets = new ArrayList<Bullet>();
 		powerups = new ArrayList<Powerup>();
 		player = new Player(256, 256);
+		
 		batch = new SpriteBatch();
 		
 		waveTimer = 100;
 		timeAlive = 0;
-		timeLeft = 500;
+		timeLeft = 0;
+		
+		tracer = true;
 	}
 	@Override
 	public void dispose()
@@ -63,6 +70,78 @@ public class Game implements ApplicationListener
 	@Override
 	public void render()
 	{
+		batch.begin();
+		if(!player.isAlive())
+		{
+			if(Gdx.input.isKeyPressed(Keys.SPACE))
+			{
+				shield = 0;
+				pierce = 0;
+				regen = 0;
+				homing = 0;
+				wipeout = 0;
+				enemies.clear();
+				bullets.clear();
+				powerups.clear();
+				player = new Player(256, 256);
+				waveTimer = 100;
+				timeAlive = 0;
+				timeLeft = 500;
+			}
+			if(Gdx.input.isKeyPressed(Keys.T))
+			{
+				if(!tracerKeyPress) tracer = !tracer;
+				tracerKeyPress = true;
+			}
+			else tracerKeyPress = false;
+			if(Gdx.input.isKeyPressed(Keys.S))
+			{
+				if(!spawnKeyPress)
+				{
+					spawnMode++;
+					if(spawnMode > 4) spawnMode = 0;
+				}
+				spawnKeyPress = true;
+			}
+			else spawnKeyPress = false;
+			batch.setColor(0, 0, 0, 1);
+			batch.draw(solidwhite, 512, 0, 1, 1, 200, 512);
+			batch.setColor(0, 1, 0, 1);
+			FontHolder.render(batch, FontHolder.getCharList("[T]racers: "+(tracer?"On":"Off")), 516, 80, true);
+			FontHolder.render(batch, FontHolder.getCharList("[S]pawn mode: "), 516, 60, true);
+			if(spawnMode == 0) FontHolder.render(batch, FontHolder.getCharList("Normal"), 526, 40, true);
+			else if(spawnMode == 1) FontHolder.render(batch, FontHolder.getCharList("Swarm (Easy)"), 526, 40, true);
+			else if(spawnMode == 2) FontHolder.render(batch, FontHolder.getCharList("Lungers (Easy)"), 526, 40, true);
+			else if(spawnMode == 3) FontHolder.render(batch, FontHolder.getCharList("Bullet Hell (Hard)"), 526, 40, true);
+			else if(spawnMode == 4) FontHolder.render(batch, FontHolder.getCharList("Bullet Hell (Insane)"), 526, 40, true);
+			else FontHolder.render(batch, FontHolder.getCharList("???"), 526, 40, true);
+			FontHolder.render(batch, FontHolder.getCharList("Space to play"), 516, 20, true);
+		}
+		if(!player.isAlive() && lastRender)
+		{
+			batch.end();
+			return;
+		}
+		lastRender = !player.isAlive();
+		if(tracer)
+		{
+			int size = enemies.size();
+			for(int a = 0; a < size; a++)
+			{
+				enemies.get(a).render(batch, true);
+			}
+			size = bullets.size();
+			for(int a = 0; a < size; a++)
+			{
+				bullets.get(a).render(batch, true);
+			}
+			size = powerups.size();
+			for(int a = 0; a < size; a++)
+			{
+				powerups.get(a).render(batch, true);
+			}
+			player.render(batch, true);
+		}
 		delta += Gdx.graphics.getDeltaTime();
 		if(delta > 0.25) delta = 0.25;
 		while(delta >= 0.02)
@@ -70,58 +149,57 @@ public class Game implements ApplicationListener
 			delta -= 0.02;
 			tick();
 		}
-		batch.begin();
-		batch.setColor(0.2f, 0.1f, 0.3f, 0.15f);
+		batch.setColor(0.2f, 0.1f, 0.3f, tracer?0.15f:1);
 		batch.draw(solidwhite, 0, 0, 1, 1, 512, 512);
 		batch.setColor(1, 1, 1, 1);
 		int size = enemies.size();
 		for(int a = 0; a < size; a++)
 		{
-			enemies.get(a).render(batch);
+			enemies.get(a).render(batch, false);
 		}
 		size = bullets.size();
 		for(int a = 0; a < size; a++)
 		{
-			bullets.get(a).render(batch);
+			bullets.get(a).render(batch, false);
 		}
 		size = powerups.size();
 		for(int a = 0; a < size; a++)
 		{
-			powerups.get(a).render(batch);
+			powerups.get(a).render(batch, false);
 		}
-		player.render(batch);
+		player.render(batch, false);
 		batch.setColor(0, 0, 0, 1);
 		batch.draw(solidwhite, 512, 0, 1, 1, 200, 512);
 		batch.setColor(0, 1, 0, 1);
 		FontHolder.render(batch, FontHolder.getCharList("Time alive:"), 516, 508, true);
-		FontHolder.render(batch, FontHolder.getCharList(""+((double)timeAlive/50)+"s"), 516, 488, true);
+		FontHolder.render(batch, FontHolder.getCharList(numberToDuration(timeAlive)), 516, 488, true);
 		FontHolder.render(batch, FontHolder.getCharList("Remaining life:"), 516, 468, true);
-		FontHolder.render(batch, FontHolder.getCharList(""+((double)timeLeft/50)+"s"), 516, 448, true);
+		FontHolder.render(batch, FontHolder.getCharList(numberToDuration(timeLeft)), 516, 448, true);
 		FontHolder.render(batch, FontHolder.getCharList("Active powers:"), 516, 428, true);
 		int yPos = 408;
 		if(shield > 0)
 		{
-			FontHolder.render(batch, FontHolder.getCharList("Shield: "+((double)shield/50)+"s"), 526, 408, true);
+			FontHolder.render(batch, FontHolder.getCharList("Shield: "+numberToDuration(shield)), 526, 408, true);
 			yPos -= 20;
 		}
 		if(pierce > 0)
 		{
-			FontHolder.render(batch, FontHolder.getCharList("Pierce: "+((double)pierce/50)+"s"), 526, yPos, true);
+			FontHolder.render(batch, FontHolder.getCharList("Pierce: "+numberToDuration(pierce)), 526, yPos, true);
 			yPos -= 20;
 		}
 		if(regen > 0)
 		{
-			FontHolder.render(batch, FontHolder.getCharList("Regen: "+((double)regen/50)+"s"), 526, yPos, true);
+			FontHolder.render(batch, FontHolder.getCharList("Regen: "+numberToDuration(regen)), 526, yPos, true);
 			yPos -= 20;
 		}
 		if(homing > 0)
 		{
-			FontHolder.render(batch, FontHolder.getCharList("Homing: "+((double)homing/50)+"s"), 526, yPos, true);
+			FontHolder.render(batch, FontHolder.getCharList("Homing: "+numberToDuration(homing)), 526, yPos, true);
 			yPos -= 20;
 		}
 		if(wipeout > 0)
 		{
-			FontHolder.render(batch, FontHolder.getCharList("Wipe-out: "+((double)wipeout/50)+"s"), 526, yPos, true);
+			FontHolder.render(batch, FontHolder.getCharList("Wipe-out: "+numberToDuration(wipeout)), 526, yPos, true);
 		}
 		batch.end();
 	}
@@ -147,10 +225,19 @@ public class Game implements ApplicationListener
 				waveTimer += val*10;
 				for(int a = 0; a < val; a++)
 				{
-					double randVal = rand.nextDouble();
-					if(randVal < 0.75) enemies.add(new EnemyMover(rand.nextInt(513), rand.nextInt(513)));
-					else if(randVal < 0.95) enemies.add(new EnemySlingshot(rand.nextInt(513), rand.nextInt(513)));
-					else enemies.add(new EnemyTurret(rand.nextInt(513), rand.nextInt(513)));
+					if(spawnMode == 1) enemies.add(new EnemyMover(rand.nextInt(513), rand.nextInt(513)));
+					else if(spawnMode == 2) enemies.add(new EnemySlingshot(rand.nextInt(513), rand.nextInt(513)));
+					else if(spawnMode == 3) enemies.add(new EnemyTurret(rand.nextInt(513), rand.nextInt(513)));
+					else if(spawnMode == 4) enemies.add(new EnemyMine(rand.nextInt(513), rand.nextInt(513)));
+					else
+					{
+						double randVal = rand.nextDouble();
+						if(randVal < 0.6) enemies.add(new EnemyMover(rand.nextInt(513), rand.nextInt(513)));
+						else if(randVal < 0.7) enemies.add(new EnemyDodgingMover(rand.nextInt(513), rand.nextInt(513)));
+						else if(randVal < 0.8) enemies.add(new EnemySlingshot(rand.nextInt(513), rand.nextInt(513)));
+						else if(randVal < 0.9) enemies.add(new EnemyMine(rand.nextInt(513), rand.nextInt(513)));
+						else enemies.add(new EnemyTurret(rand.nextInt(513), rand.nextInt(513)));
+					}
 				}
 			}
 			int size = enemies.size();
@@ -241,5 +328,26 @@ public class Game implements ApplicationListener
 		name = "sounds/" + name + ".ogg";
 		if(!File.separator.equals("/")) name.replace("/", File.separator);
 		return Gdx.audio.newMusic(Gdx.files.internal(name));
+	}
+	
+	public static String numberToDuration(int val)
+	{
+		if(val < 0) return "00.00s";
+		int mins = 0, secs = 0, mils = val*2;
+		while(mils >= 100)
+		{
+			mils -= 100;
+			secs++;
+		}
+		while(secs >= 60)
+		{
+			secs -= 60;
+			mins++;
+		}
+		String M = ""+mins, S = ""+secs, ML = ""+mils;
+		if(secs < 10) S = "0"+S;
+		if(mils < 10) ML = "0"+ML;
+		if(mins > 0) return M+"m "+S+"."+ML+"s";
+		else return S+"."+ML+"s";
 	}
 }

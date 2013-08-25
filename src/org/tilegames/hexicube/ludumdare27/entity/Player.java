@@ -9,7 +9,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Player extends Entity
 {
-	private double x, y;
+	private double x, y, prevX, prevY;
 	private boolean alive;
 	
 	private int shootTimer;
@@ -20,6 +20,8 @@ public class Player extends Entity
 	{
 		this.x = x;
 		this.y = y;
+		prevX = x;
+		prevY = y;
 		alive = true;
 	}
 	
@@ -45,6 +47,8 @@ public class Player extends Entity
 	public void tick()
 	{
 		if(Game.timeLeft <= 0) alive = false;
+		prevX = x;
+		prevY = y;
 		if(alive)
 		{
 			shootTimer--;
@@ -52,11 +56,11 @@ public class Player extends Entity
 			if(Gdx.input.isKeyPressed(Keys.RIGHT)) x+=3;
 			if(Gdx.input.isKeyPressed(Keys.UP)) y+=3;
 			if(Gdx.input.isKeyPressed(Keys.DOWN)) y-=3;
+			if(x < 16) x = 16;
+			if(y < 16) y = 16;
+			if(x > 496) x = 496;
+			if(y > 496) y = 496;
 		}
-		if(x < 16) x = 16;
-		if(y < 16) y = 16;
-		if(x > 496) x = 496;
-		if(y > 496) y = 496;
 		if(Gdx.input.isButtonPressed(0))
 		{
 			if(shootTimer <= 0)
@@ -82,10 +86,11 @@ public class Player extends Entity
 	}
 	
 	@Override
-	public void render(SpriteBatch batch)
+	public void render(SpriteBatch batch, boolean trail)
 	{
-		if(Gdx.input.isButtonPressed(0)) batch.setColor(1, 0, 0, 1);
+		if(Gdx.input.isButtonPressed(0) && !trail) batch.setColor(1, 0, 0, 1);
 		else batch.setColor(1, 1, 1, 1);
 		batch.draw(tex, (float)x-16, (float)y-16);
+		if(trail) batch.draw(tex, (float)prevX-16, (float)prevY-16);
 	}
 }

@@ -5,21 +5,19 @@ import org.tilegames.hexicube.ludumdare27.Game;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-public class EnemySlingshot extends Enemy
+public class EnemyDodgingMover extends Enemy
 {
-	private static final Texture tex = Game.loadImage("enemysling");
+	private static final Texture tex = Game.loadImage("enemydodge");
 	
-	private int timer, spawnTimer;
-	private double angle;
+	private int spawnTimer;
 	
-	public EnemySlingshot(double x, double y)
+	public EnemyDodgingMover(double x, double y)
 	{
 		this.x = x;
 		this.y = y;
 		prevX = x;
 		prevY = y;
 		alive = true;
-		timer = -30+Game.rand.nextInt(31);
 		spawnTimer = 50;
 	}
 	
@@ -51,20 +49,28 @@ public class EnemySlingshot extends Enemy
 			spawnTimer--;
 			return;
 		}
+		boolean bulletNear = false;
+		int size = Game.bullets.size();
+		for(int a = 0; a < size; a++)
+		{
+			Bullet b = Game.bullets.get(a);
+			double distX = x-b.getX();
+			if(distX > 50) continue;
+			double distY = y-b.getY();
+			if(distY > 50) continue;
+			if(distX*distX+distY*distY <= 2500)
+			{
+				bulletNear = true;
+				break;
+			}
+		}
+		double angle = Math.atan2(y-Game.player.getY(), Game.player.getX()-x)+Math.PI/2;
+		if(bulletNear) angle += Math.PI/3;
 		prevX = x;
 		prevY = y;
-		if(timer <= -30)
-		{
-			timer = 60;
-			angle = Math.atan2(y-Game.player.getY(), Game.player.getX()-x)+Math.PI/2;
-		}
-		else if(timer > 0)
-		{
-			x += Math.sin(angle)*timer*0.2;
-			y += Math.cos(angle)*timer*0.2;
-		}
+		x += Math.sin(angle)*2;
+		y += Math.cos(angle)*2;
 		Game.checkCollision(this, Game.player);
-		timer--;
 	}
 	@Override
 	public boolean isAlive()

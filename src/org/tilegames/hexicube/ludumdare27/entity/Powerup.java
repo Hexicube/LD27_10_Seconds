@@ -67,8 +67,9 @@ public class Powerup extends Entity
 		return alive;
 	}
 	@Override
-	public void render(SpriteBatch batch)
+	public void render(SpriteBatch batch, boolean trail)
 	{
+		if(trail) return;
 		batch.setColor(1, 1, 1, 1);
 		Texture tex;
 		if(type == PowerupType.SHIELD) tex = shield;

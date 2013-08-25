@@ -12,5 +12,5 @@ public abstract class Entity
 	
 	public abstract boolean isAlive();
 	
-	public abstract void render(SpriteBatch batch);
+	public abstract void render(SpriteBatch batch, boolean trail);
 }

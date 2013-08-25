@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class EnemyMover extends Enemy
 {
-	private static final Texture tex = Game.loadImage("enemysling");
+	public static final Texture tex = Game.loadImage("enemyplain");
 	
 	private int spawnTimer;
 	
@@ -58,8 +58,9 @@ public class EnemyMover extends Enemy
 		return alive;
 	}
 	@Override
-	public void render(SpriteBatch batch)
+	public void render(SpriteBatch batch, boolean trail)
 	{
+		if(trail) return;
 		if(spawnTimer > 0) batch.setColor(0, 1, 1, 1);
 		else batch.setColor(1, 1, 1, 1);
 		batch.draw(tex, (float)x-8, (float)y-8);

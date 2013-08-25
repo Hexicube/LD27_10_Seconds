@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Bullet extends Entity
 {
-	private double x, y, spdX, spdY, speed, angle;
+	private double x, y, prevX, prevY, spdX, spdY, speed, angle;
 	private boolean playerFired, homing, alive;
 	
 	private static final Texture tex = Game.loadImage("bullet");
@@ -16,6 +16,8 @@ public class Bullet extends Entity
 	{
 		this.x = x;
 		this.y = y;
+		prevX = x;
+		prevY = y;
 		spdX = Math.cos(angle)*speed;
 		spdY = Math.sin(angle)*speed;
 		this.speed = speed;
@@ -83,10 +85,11 @@ public class Bullet extends Entity
 				else if(angle > angle2) angle -= 0.025;
 				else angle += 0.025;
 			}
-			//TODO: calc nearest enemy and adjust angle
 			spdX = Math.cos(angle)*speed;
 			spdY = Math.sin(angle)*speed;
 		}
+		prevX = x;
+		prevY = y;
 		x += spdX;
 		y += spdY;
 		if(playerFired)
@@ -111,10 +114,12 @@ public class Bullet extends Entity
 		return alive;
 	}
 	@Override
-	public void render(SpriteBatch batch)
+	public void render(SpriteBatch batch, boolean trail)
 	{
-		if(playerFired) batch.setColor(0, 1, 0, 1);
+		if(trail) batch.setColor(1, 0, 0, 1);
+		else if(playerFired) batch.setColor(0, 1, 0, 1);
 		else batch.setColor(1, 0, 0, 1);
 		batch.draw(tex, (float)x-4, (float)y-4);
+		if(trail) batch.draw(tex, (float)prevX-4, (float)prevY-4);
 	}
 }

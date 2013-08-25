@@ -8,11 +8,13 @@ public class DesktopStarter {
 	
 	public static void main(String[] args) {
 		config = new LwjglApplicationConfiguration();
-		config.title = "10 Seconds";
+		config.title = "10 Seconds of life - V3";
 		config.width = 712;
 		config.height = 512;
 		config.useGL20 = false;
 		config.vSyncEnabled = true;
+		config.useCPUSynch = false;
+		config.depth = 1;
 		
 		new LwjglApplication(new Game(), config);
 	}
