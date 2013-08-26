@@ -33,7 +33,7 @@ public class Game implements ApplicationListener
 	
 	public static Texture solidwhite;
 	
-	private static boolean tracer, tracerKeyPress, spawnKeyPress, lastRender;
+	private static boolean tracer, tracerKeyPress, spawnKeyPress, fullscreenKeyPress, lastRender, fullscreen;
 	private static int spawnMode;
 	
 	@Override
@@ -49,12 +49,12 @@ public class Game implements ApplicationListener
 		enemies = new ArrayList<Enemy>();
 		bullets = new ArrayList<Bullet>();
 		powerups = new ArrayList<Powerup>();
-		player = new Player(256, 256);
+		player = new Player(300, 300);
 		
 		batch = new SpriteBatch();
 		
 		waveTimer = 100;
-		timeAlive = 0;
+		timeAlive = -1;
 		timeLeft = 0;
 		
 		tracer = true;
@@ -73,6 +73,16 @@ public class Game implements ApplicationListener
 		batch.begin();
 		if(!player.isAlive())
 		{
+			if(Gdx.input.isKeyPressed(Keys.F))
+			{
+				if(!fullscreenKeyPress)
+				{
+					fullscreen = !fullscreen;
+					resize(1, 1);
+				}
+				fullscreenKeyPress = true;
+			}
+			else fullscreenKeyPress = false;
 			if(Gdx.input.isKeyPressed(Keys.SPACE))
 			{
 				shield = 0;
@@ -83,7 +93,7 @@ public class Game implements ApplicationListener
 				enemies.clear();
 				bullets.clear();
 				powerups.clear();
-				player = new Player(256, 256);
+				player = new Player(300, 300);
 				waveTimer = 100;
 				timeAlive = 0;
 				timeLeft = 500;
@@ -99,23 +109,39 @@ public class Game implements ApplicationListener
 				if(!spawnKeyPress)
 				{
 					spawnMode++;
-					if(spawnMode > 4) spawnMode = 0;
+					if(spawnMode > 8) spawnMode = 0;
 				}
 				spawnKeyPress = true;
 			}
 			else spawnKeyPress = false;
+			if(Gdx.input.isKeyPressed(Keys.NUM_1)) spawnMode = 0;
+			if(Gdx.input.isKeyPressed(Keys.NUM_2)) spawnMode = 1;
+			if(Gdx.input.isKeyPressed(Keys.NUM_3)) spawnMode = 2;
+			if(Gdx.input.isKeyPressed(Keys.NUM_4)) spawnMode = 3;
+			if(Gdx.input.isKeyPressed(Keys.NUM_5)) spawnMode = 4;
+			if(Gdx.input.isKeyPressed(Keys.NUM_6)) spawnMode = 5;
+			if(Gdx.input.isKeyPressed(Keys.NUM_7)) spawnMode = 6;
+			if(Gdx.input.isKeyPressed(Keys.NUM_8)) spawnMode = 7;
+			if(Gdx.input.isKeyPressed(Keys.NUM_9)) spawnMode = 8;
 			batch.setColor(0, 0, 0, 1);
-			batch.draw(solidwhite, 512, 0, 1, 1, 200, 512);
+			batch.draw(solidwhite, 600, 0, 1, 1, 200, 600);
 			batch.setColor(0, 1, 0, 1);
-			FontHolder.render(batch, FontHolder.getCharList("[T]racers: "+(tracer?"On":"Off")), 516, 80, true);
-			FontHolder.render(batch, FontHolder.getCharList("[S]pawn mode: "), 516, 60, true);
-			if(spawnMode == 0) FontHolder.render(batch, FontHolder.getCharList("Normal"), 526, 40, true);
-			else if(spawnMode == 1) FontHolder.render(batch, FontHolder.getCharList("Swarm (Easy)"), 526, 40, true);
-			else if(spawnMode == 2) FontHolder.render(batch, FontHolder.getCharList("Lungers (Easy)"), 526, 40, true);
-			else if(spawnMode == 3) FontHolder.render(batch, FontHolder.getCharList("Bullet Hell (Hard)"), 526, 40, true);
-			else if(spawnMode == 4) FontHolder.render(batch, FontHolder.getCharList("Bullet Hell (Insane)"), 526, 40, true);
-			else FontHolder.render(batch, FontHolder.getCharList("???"), 526, 40, true);
-			FontHolder.render(batch, FontHolder.getCharList("Space to play"), 516, 20, true);
+			FontHolder.render(batch, FontHolder.getCharList("Time alive:"), 604, 596, true);
+			FontHolder.render(batch, FontHolder.getCharList(numberToDuration(timeAlive)), 604, 576, true);
+			FontHolder.render(batch, FontHolder.getCharList("[F]ullscreen: "+(fullscreen?"On":"Off")), 604, 100, true);
+			FontHolder.render(batch, FontHolder.getCharList("[T]racers: "+(tracer?"On":"Off")), 604, 80, true);
+			FontHolder.render(batch, FontHolder.getCharList("[S]pawn mode: "), 604, 60, true);
+			if(spawnMode == 0) FontHolder.render(batch, FontHolder.getCharList("[1]Normal"), 604, 40, true);
+			else if(spawnMode == 1) FontHolder.render(batch, FontHolder.getCharList("[2]Less Specials"), 604, 40, true);
+			else if(spawnMode == 2) FontHolder.render(batch, FontHolder.getCharList("[3]Swarm"), 604, 40, true);
+			else if(spawnMode == 3) FontHolder.render(batch, FontHolder.getCharList("[4]Lungers"), 604, 40, true);
+			else if(spawnMode == 4) FontHolder.render(batch, FontHolder.getCharList("[5]Bullet Hell"), 604, 40, true);
+			else if(spawnMode == 5) FontHolder.render(batch, FontHolder.getCharList("[6]Mine Hell"), 604, 40, true);
+			else if(spawnMode == 6) FontHolder.render(batch, FontHolder.getCharList("[7]No Mines"), 604, 40, true);
+			else if(spawnMode == 7) FontHolder.render(batch, FontHolder.getCharList("[8]No Bullets"), 604, 40, true);
+			else if(spawnMode == 8) FontHolder.render(batch, FontHolder.getCharList("[9]Super Swarm"), 604, 40, true);
+			else FontHolder.render(batch, FontHolder.getCharList("???"), 604, 40, true);
+			FontHolder.render(batch, FontHolder.getCharList("Space to play"), 604, 20, true);
 		}
 		if(!player.isAlive() && lastRender)
 		{
@@ -150,7 +176,7 @@ public class Game implements ApplicationListener
 			tick();
 		}
 		batch.setColor(0.2f, 0.1f, 0.3f, tracer?0.15f:1);
-		batch.draw(solidwhite, 0, 0, 1, 1, 512, 512);
+		batch.draw(solidwhite, 0, 0, 1, 1, 600, 600);
 		batch.setColor(1, 1, 1, 1);
 		int size = enemies.size();
 		for(int a = 0; a < size; a++)
@@ -169,43 +195,45 @@ public class Game implements ApplicationListener
 		}
 		player.render(batch, false);
 		batch.setColor(0, 0, 0, 1);
-		batch.draw(solidwhite, 512, 0, 1, 1, 200, 512);
+		batch.draw(solidwhite, 600, 0, 1, 1, 200, 600);
 		batch.setColor(0, 1, 0, 1);
-		FontHolder.render(batch, FontHolder.getCharList("Time alive:"), 516, 508, true);
-		FontHolder.render(batch, FontHolder.getCharList(numberToDuration(timeAlive)), 516, 488, true);
-		FontHolder.render(batch, FontHolder.getCharList("Remaining life:"), 516, 468, true);
-		FontHolder.render(batch, FontHolder.getCharList(numberToDuration(timeLeft)), 516, 448, true);
-		FontHolder.render(batch, FontHolder.getCharList("Active powers:"), 516, 428, true);
-		int yPos = 408;
+		FontHolder.render(batch, FontHolder.getCharList("Time alive:"), 604, 596, true);
+		FontHolder.render(batch, FontHolder.getCharList(numberToDuration(timeAlive)), 604, 576, true);
+		FontHolder.render(batch, FontHolder.getCharList("Remaining life:"), 604, 556, true);
+		FontHolder.render(batch, FontHolder.getCharList(numberToDuration(timeLeft)), 604, 536, true);
+		FontHolder.render(batch, FontHolder.getCharList("Active powers:"), 604, 516, true);
+		int yPos = 496;
 		if(shield > 0)
 		{
-			FontHolder.render(batch, FontHolder.getCharList("Shield: "+numberToDuration(shield)), 526, 408, true);
+			FontHolder.render(batch, FontHolder.getCharList("Shield: "+numberToDuration(shield)), 604, 408, true);
 			yPos -= 20;
 		}
 		if(pierce > 0)
 		{
-			FontHolder.render(batch, FontHolder.getCharList("Pierce: "+numberToDuration(pierce)), 526, yPos, true);
+			FontHolder.render(batch, FontHolder.getCharList("Pierce: "+numberToDuration(pierce)), 604, yPos, true);
 			yPos -= 20;
 		}
 		if(regen > 0)
 		{
-			FontHolder.render(batch, FontHolder.getCharList("Regen: "+numberToDuration(regen)), 526, yPos, true);
+			FontHolder.render(batch, FontHolder.getCharList("Regen: "+numberToDuration(regen)), 604, yPos, true);
 			yPos -= 20;
 		}
 		if(homing > 0)
 		{
-			FontHolder.render(batch, FontHolder.getCharList("Homing: "+numberToDuration(homing)), 526, yPos, true);
+			FontHolder.render(batch, FontHolder.getCharList("Homing: "+numberToDuration(homing)), 604, yPos, true);
 			yPos -= 20;
 		}
 		if(wipeout > 0)
 		{
-			FontHolder.render(batch, FontHolder.getCharList("Wipe-out: "+numberToDuration(wipeout)), 526, yPos, true);
+			FontHolder.render(batch, FontHolder.getCharList("Wipe-out: "+numberToDuration(wipeout)), 604, yPos, true);
 		}
 		batch.end();
 	}
 	@Override
 	public void resize(int width, int height)
 	{
+		if(width != 800 || height != 600) Gdx.graphics.setDisplayMode(800, 600, fullscreen);
+		else batch = new SpriteBatch(800, 600);
 	}
 	@Override
 	public void resume()
@@ -225,18 +253,47 @@ public class Game implements ApplicationListener
 				waveTimer += val*10;
 				for(int a = 0; a < val; a++)
 				{
-					if(spawnMode == 1) enemies.add(new EnemyMover(rand.nextInt(513), rand.nextInt(513)));
-					else if(spawnMode == 2) enemies.add(new EnemySlingshot(rand.nextInt(513), rand.nextInt(513)));
-					else if(spawnMode == 3) enemies.add(new EnemyTurret(rand.nextInt(513), rand.nextInt(513)));
-					else if(spawnMode == 4) enemies.add(new EnemyMine(rand.nextInt(513), rand.nextInt(513)));
+					if(spawnMode == 2) enemies.add(new EnemyMover(rand.nextInt(601), rand.nextInt(601)));
+					else if(spawnMode == 8)
+					{
+						enemies.add(new EnemyMover(rand.nextInt(601), rand.nextInt(601)));
+						if(a == 0) waveTimer -= val*5;
+					}
+					else if(spawnMode == 3) enemies.add(new EnemySlingshot(rand.nextInt(601), rand.nextInt(601)));
+					else if(spawnMode == 4) enemies.add(new EnemyTurret(rand.nextInt(601), rand.nextInt(601)));
+					else if(spawnMode == 5) enemies.add(new EnemyMine(rand.nextInt(601), rand.nextInt(601)));
+					else if(spawnMode == 1)
+					{
+						double randVal = rand.nextDouble();
+						if(randVal < 0.8) enemies.add(new EnemyMover(rand.nextInt(601), rand.nextInt(601)));
+						else if(randVal < 0.85) enemies.add(new EnemyDodgingMover(rand.nextInt(601), rand.nextInt(601)));
+						else if(randVal < 0.9) enemies.add(new EnemySlingshot(rand.nextInt(601), rand.nextInt(601)));
+						else if(randVal < 0.95) enemies.add(new EnemyMine(rand.nextInt(601), rand.nextInt(601)));
+						else enemies.add(new EnemyTurret(rand.nextInt(601), rand.nextInt(601)));
+					}
+					else if(spawnMode == 6)
+					{
+						double randVal = rand.nextDouble();
+						if(randVal < 0.7) enemies.add(new EnemyMover(rand.nextInt(601), rand.nextInt(601)));
+						else if(randVal < 0.8) enemies.add(new EnemyDodgingMover(rand.nextInt(601), rand.nextInt(601)));
+						else if(randVal < 0.9) enemies.add(new EnemySlingshot(rand.nextInt(601), rand.nextInt(601)));
+						else enemies.add(new EnemyTurret(rand.nextInt(601), rand.nextInt(601)));
+					}
+					else if(spawnMode == 7)
+					{
+						double randVal = rand.nextDouble();
+						if(randVal < 0.7) enemies.add(new EnemyMover(rand.nextInt(601), rand.nextInt(601)));
+						else if(randVal < 0.85) enemies.add(new EnemyDodgingMover(rand.nextInt(601), rand.nextInt(601)));
+						else enemies.add(new EnemySlingshot(rand.nextInt(601), rand.nextInt(601)));
+					}
 					else
 					{
 						double randVal = rand.nextDouble();
-						if(randVal < 0.6) enemies.add(new EnemyMover(rand.nextInt(513), rand.nextInt(513)));
-						else if(randVal < 0.7) enemies.add(new EnemyDodgingMover(rand.nextInt(513), rand.nextInt(513)));
-						else if(randVal < 0.8) enemies.add(new EnemySlingshot(rand.nextInt(513), rand.nextInt(513)));
-						else if(randVal < 0.9) enemies.add(new EnemyMine(rand.nextInt(513), rand.nextInt(513)));
-						else enemies.add(new EnemyTurret(rand.nextInt(513), rand.nextInt(513)));
+						if(randVal < 0.6) enemies.add(new EnemyMover(rand.nextInt(601), rand.nextInt(601)));
+						else if(randVal < 0.7) enemies.add(new EnemyDodgingMover(rand.nextInt(601), rand.nextInt(601)));
+						else if(randVal < 0.8) enemies.add(new EnemySlingshot(rand.nextInt(601), rand.nextInt(601)));
+						else if(randVal < 0.9) enemies.add(new EnemyMine(rand.nextInt(601), rand.nextInt(601)));
+						else enemies.add(new EnemyTurret(rand.nextInt(601), rand.nextInt(601)));
 					}
 				}
 			}

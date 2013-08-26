@@ -58,15 +58,15 @@ public class Player extends Entity
 			if(Gdx.input.isKeyPressed(Keys.DOWN)) y-=3;
 			if(x < 16) x = 16;
 			if(y < 16) y = 16;
-			if(x > 496) x = 496;
-			if(y > 496) y = 496;
+			if(x > 584) x = 584;
+			if(y > 584) y = 584;
 		}
 		if(Gdx.input.isButtonPressed(0))
 		{
 			if(shootTimer <= 0)
 			{
 				shootTimer = 4;
-				Game.bullets.add(new Bullet(x, y, 5, Math.atan2(y-(511-Gdx.input.getY()), x-Gdx.input.getX())+Math.PI, true, Game.homing>0));
+				Game.bullets.add(new Bullet(x, y, 5, Math.atan2(y-(599-Gdx.input.getY()), x-Gdx.input.getX())+Math.PI, true, Game.homing>0));
 			}
 		}
 	}

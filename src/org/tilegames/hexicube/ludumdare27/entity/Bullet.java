@@ -101,7 +101,7 @@ public class Bullet extends Entity
 			}
 		}
 		else Game.checkCollision(this, Game.player);
-		if(x < -4 || x > 516 || y < -4 || y > 516) alive = false;
+		if(x < -4 || x > 604 || y < -4 || y > 604) alive = false;
 	}
 	@Override
 	public void collidedWith(Entity e)
